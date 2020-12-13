@@ -4,6 +4,18 @@
         <name>Digital.curso.api</name>
     </assembly>
     <members>
+        <member name="M:Digital.curso.api.Controllers.CursoController.Post(Digital.curso.api.Models.Cursos.CursoViewModelInput)">
+            <summary>
+            Este serviço permite cadastrar curso para o usuário autenticado.
+            </summary>
+            <returns>Retorna status 201 e dados do curso do usuário</returns>
+        </member>
+        <member name="M:Digital.curso.api.Controllers.CursoController.Get">
+            <summary>
+            Este serviço permite obter todos os cursos ativos do usuário.
+            </summary>
+            <returns>Retorna status ok e dados do curso do usuário</returns>
+        </member>
         <member name="M:Digital.curso.api.Controllers.UsuarioController.Logar(Digital.curso.api.Models.Usuarios.LoginViewModelInput)">
             <summary>
             Este serviço permite autenticar um usuário cadastrado e ativo
