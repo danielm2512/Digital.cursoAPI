@@ -9,7 +9,7 @@ namespace Digital.curso.api.Configurations
         public CursoDbContext CreateDbContext(string[] args)
         {
             var optionsBuilder = new DbContextOptionsBuilder<CursoDbContext>();
-            optionsBuilder.UseSqlServer("Server=localhost,Database=CURSO");
+            optionsBuilder.UseSqlServer("Server=localhost;Database=Curso;Trusted_Connection=True;");
             CursoDbContext contexto = new CursoDbContext(optionsBuilder.Options);
 
             return contexto;

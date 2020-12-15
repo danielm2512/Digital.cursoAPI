@@ -78,7 +78,7 @@ namespace Digital.curso.api.Controllers
         public IActionResult Registrar(RegistroViewModelInput loginViewModelInput)
         {
             var optionsBuilder = new DbContextOptionsBuilder<CursoDbContext>();
-            optionsBuilder.UseSqlServer("Server=localhost,Database=CURSO");
+            optionsBuilder.UseSqlServer("Server=localhost;Database=Curso;Trusted_Connection=True;");
             CursoDbContext contexto = new CursoDbContext(optionsBuilder.Options);
 
             var migracoesPendentes = contexto.Database.GetPendingMigrations();
