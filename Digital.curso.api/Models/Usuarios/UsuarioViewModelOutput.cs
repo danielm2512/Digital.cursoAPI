@@ -1,6 +1,7 @@
-﻿namespace Digital.curso.api.Controllers
+﻿namespace Digital.curso.api.Models.Usuarios
+
 {
-    internal class UsuarioViewModelOutput
+    public class UsuarioViewModelOutput
     {
 
         public int Codigo { get; set; }

@@ -6,12 +6,16 @@ using System.Security.Claims;
 using System.Text;
 using System.Threading.Tasks;
 using Digital.curso.api.Business.Entities;
+using Digital.curso.api.Business.Repositories;
+using Digital.curso.api.Configurations;
 using Digital.curso.api.Filters;
 using Digital.curso.api.Infraestruture.Data;
+using Digital.curso.api.Models;
 using Digital.curso.api.Models.Usuarios;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Configuration;
 using Microsoft.IdentityModel.Tokens;
 using Swashbuckle.AspNetCore.Annotations;
 
@@ -21,6 +25,22 @@ namespace Digital.curso.api.Controllers
     [ApiController]
     public class UsuarioController : ControllerBase
     {
+
+
+        private readonly IUsuarioRepository _usuariorepository;
+        private readonly IConfiguration _configuration;
+        private readonly IAuthenticationService _authenticationService;
+
+        public UsuarioController(
+            IUsuarioRepository usuariorepository, 
+            IConfiguration configuration,
+            IAuthenticationService authenticationService)
+        {
+            _usuariorepository = usuariorepository;
+            _configuration = configuration;
+            _authenticationService = authenticationService;
+        }
+
         /// <summary>
         /// Este serviço permite autenticar um usuário cadastrado e ativo
         /// </summary>
@@ -47,23 +67,24 @@ namespace Digital.curso.api.Controllers
 
             };
 
-            var secret = Encoding.ASCII.GetBytes("MzfsT&d9gprP>!9$Es(X!5g@;ef!5sbk:jH\\2.}8ZP'qY#7");
-            var symmetricSecurityKey = new SymmetricSecurityKey(secret);
-            var securityTokenDescriptor = new SecurityTokenDescriptor
+            //var secret = Encoding.ASCII.GetBytes(_configuration.GetSection("JwtConfiguration:Secret").Value);
+            //var symmetricSecurityKey = new SymmetricSecurityKey(secret);
+            //var securityTokenDescriptor = new SecurityTokenDescriptor
 
-            {
-                Subject = new ClaimsIdentity(new Claim[]
-                {
-                    new Claim(ClaimTypes.NameIdentifier, usuarioViewModelOutput.Codigo.ToString()),
-                    new Claim(ClaimTypes.Name, usuarioViewModelOutput.Login.ToString()),
-                    new Claim(ClaimTypes.Email, usuarioViewModelOutput.Email.ToString())
-                }),
-                Expires = DateTime.UtcNow.AddDays(1),
-                SigningCredentials = new SigningCredentials(symmetricSecurityKey, SecurityAlgorithms.HmacSha256Signature)
-            };
-            var jwtSecurityTokenHandler = new JwtSecurityTokenHandler();
-            var tokenGenerated = jwtSecurityTokenHandler.CreateToken(securityTokenDescriptor);
-            var token = jwtSecurityTokenHandler.WriteToken(tokenGenerated);
+            //{
+            //    Subject = new ClaimsIdentity(new Claim[]
+            //    {
+            //        new Claim(ClaimTypes.NameIdentifier, usuarioViewModelOutput.Codigo.ToString()),
+            //        new Claim(ClaimTypes.Name, usuarioViewModelOutput.Login.ToString()),
+            //        new Claim(ClaimTypes.Email, usuarioViewModelOutput.Email.ToString())
+            //    }),
+            //    Expires = DateTime.UtcNow.AddDays(1),
+            //    SigningCredentials = new SigningCredentials(symmetricSecurityKey, SecurityAlgorithms.HmacSha256Signature)
+            //};
+            //var jwtSecurityTokenHandler = new JwtSecurityTokenHandler();
+            //var tokenGenerated = jwtSecurityTokenHandler.CreateToken(securityTokenDescriptor);
+            //var token = jwtSecurityTokenHandler.WriteToken(tokenGenerated);
+            var token = _authenticationService.GerarToken(usuarioViewModelOutput);
 
             return Ok(new 
             { 
@@ -77,24 +98,22 @@ namespace Digital.curso.api.Controllers
         [ValidacaoModelStateCustomizado]
         public IActionResult Registrar(RegistroViewModelInput loginViewModelInput)
         {
-            var optionsBuilder = new DbContextOptionsBuilder<CursoDbContext>();
-            optionsBuilder.UseSqlServer("Server=localhost;Database=Curso;Trusted_Connection=True;");
-            CursoDbContext contexto = new CursoDbContext(optionsBuilder.Options);
-
-            var migracoesPendentes = contexto.Database.GetPendingMigrations();
-            if (migracoesPendentes.Count() > 0)
-            {
-                contexto.Database.Migrate();
-            }
+          
+            //var migracoesPendentes = contexto.Database.GetPendingMigrations();
+            //if (migracoesPendentes.Count() > 0)
+            //{
+            //    contexto.Database.Migrate();
+            //}
 
 
             var usuario = new Usuario();
             usuario.Login = loginViewModelInput.Login;
             usuario.Senha = loginViewModelInput.Senha;
             usuario.Email = loginViewModelInput.Email;
+            _usuariorepository.Adicionar(usuario);
+            _usuariorepository.Commit();
 
-            contexto.Usuario.Add(usuario);
-            contexto.SaveChanges();
+            
 
             return Created("", loginViewModelInput);
         }
