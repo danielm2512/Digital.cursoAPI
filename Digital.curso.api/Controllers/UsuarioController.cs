@@ -28,16 +28,13 @@ namespace Digital.curso.api.Controllers
 
 
         private readonly IUsuarioRepository _usuariorepository;
-        private readonly IConfiguration _configuration;
         private readonly IAuthenticationService _authenticationService;
 
         public UsuarioController(
-            IUsuarioRepository usuariorepository, 
-            IConfiguration configuration,
+            IUsuarioRepository usuariorepository,
             IAuthenticationService authenticationService)
         {
             _usuariorepository = usuariorepository;
-            _configuration = configuration;
             _authenticationService = authenticationService;
         }
 
@@ -54,36 +51,27 @@ namespace Digital.curso.api.Controllers
         [ValidacaoModelStateCustomizado]
         public IActionResult Logar(LoginViewModelInput  loginViewModelInput)
         {
-            //if (!ModelState.IsValid)
+            Usuario usuario = _usuariorepository.ObterUsuario(loginViewModelInput.Login);
+
+            if (usuario == null)
+            {
+                return BadRequest("Houve um erro ao tentar acessar");
+            }
+
+            //if (usuario.Senha != loginViewModelInput.Senha.GerarSenhaCriptografada())
             //{
-            //    return BadRequest(new ValidaCampoViewModelOutput(ModelState.SelectMany(sm => sm.Value.Errors).Select(s => s.ErrorMessage))) ;
+            //    return BadRequest("Houve um erro ao tentar acessar");
             //}
 
             var usuarioViewModelOutput = new UsuarioViewModelOutput()
             {
-                Codigo = 1,
-                Login = "Daniel",
-                Email = "danielm2512@hotmail.com"
+                Codigo = usuario.Codigo,
+                Login = loginViewModelInput.Login,
+                Email = usuario.Email
 
             };
 
-            //var secret = Encoding.ASCII.GetBytes(_configuration.GetSection("JwtConfiguration:Secret").Value);
-            //var symmetricSecurityKey = new SymmetricSecurityKey(secret);
-            //var securityTokenDescriptor = new SecurityTokenDescriptor
-
-            //{
-            //    Subject = new ClaimsIdentity(new Claim[]
-            //    {
-            //        new Claim(ClaimTypes.NameIdentifier, usuarioViewModelOutput.Codigo.ToString()),
-            //        new Claim(ClaimTypes.Name, usuarioViewModelOutput.Login.ToString()),
-            //        new Claim(ClaimTypes.Email, usuarioViewModelOutput.Email.ToString())
-            //    }),
-            //    Expires = DateTime.UtcNow.AddDays(1),
-            //    SigningCredentials = new SigningCredentials(symmetricSecurityKey, SecurityAlgorithms.HmacSha256Signature)
-            //};
-            //var jwtSecurityTokenHandler = new JwtSecurityTokenHandler();
-            //var tokenGenerated = jwtSecurityTokenHandler.CreateToken(securityTokenDescriptor);
-            //var token = jwtSecurityTokenHandler.WriteToken(tokenGenerated);
+            
             var token = _authenticationService.GerarToken(usuarioViewModelOutput);
 
             return Ok(new 

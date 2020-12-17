@@ -1,5 +1,6 @@
 ﻿using Digital.curso.api.Business.Entities;
 using Digital.curso.api.Business.Repositories;
+using System.Linq;
 
 namespace Digital.curso.api.Infraestruture.Data.Repositories
 {
@@ -20,6 +21,11 @@ namespace Digital.curso.api.Infraestruture.Data.Repositories
         public void Commit()
         {
             _contexto.SaveChanges();
+        }
+
+        public Usuario ObterUsuario(string login)
+        {
+            return _contexto.Usuario.FirstOrDefault(u => u.Login == login);
         }
     }
 }
